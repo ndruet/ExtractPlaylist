@@ -1,6 +1,6 @@
 # ExtractPlaylist
 
-Script Groovy pour copier les musiques d'une playlist (*.m3u) vers un dossier
+Script Groovy pour copier les musiques d'une playlist (*.m3u) vers un dossier.
 
 ## Format de la playlist
 Seuls les chemins relatifs sont acceptés
@@ -12,8 +12,8 @@ Seuls les chemins relatifs sont acceptés
 
 ## Les commandes
 Outil en ligne de commande
-- __-playlist__ indique le chemin vers la playlist
+- __-playlist__ le path de la playlist
 - __-output__ repertoire de destination
-- __-album__ ajout lors de la copie les autres musiques de l'album
+- __-album__ ajout à la copie de toutes les musiques de l'album
 - __-help__ affiche l'aide
 - __-debug__ affiche les messages de débug
