@@ -3,84 +3,116 @@ package com.dr23.extractplaylist
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
 
-class ExtractPlayListTest extends GroovyTestCase {
+class ExtractPlaylistTest extends GroovyTestCase {
 
-    static String PATH_RESOURCES_DIRECTORY = 'src/test/resources/'
-    static String PATH_TEST_DIRECTORY = PATH_RESOURCES_DIRECTORY+'com/dr23/extractplaylist/'
+    static String CURRENT_TEST_PATH = 'src/test/resources/com/dr23/extractplaylist/'
 
-    def main = new ExtractPlayList();
+    def main = new ExtractPlaylist();
 
-//    void testParameters_avec_parametres_attend_initialisation(){
-//        String[] argv = { "-log", "2", "-groups", "unit1,unit2,unit3", "-debug", "-Doption=value", "a", "b", "c" };
-//        new JCommander(main, argv);
-//
-//        Assert.assertEquals(2, jct.verbose.intValue());
-//        Assert.assertEquals("unit1,unit2,unit3", jct.groups);
-//        Assert.assertEquals(true, jct.debug);
-//        Assert.assertEquals("value", jct.dynamicParams.get("option"));
-//        Assert.assertEquals(Arrays.asList("a", "b", "c"), jct.parameters);
-//    }
 
-    void testParameters_sans_parametre_attend_options_required(){
+    void testParameters_sans_parametre_attend_options_required() {
         // Given
         String[] argv = []
 
         // When
-        try{
+        try {
             new JCommander(main, argv);
         }
         // Then
-        catch (ParameterException e){
-            assertTrue( e.getMessage().contains("The following options are required: -output -playlist" ))
+        catch (ParameterException e) {
+            assertTrue(e.getMessage().contains("The following options are required: -output -playlist"))
         }
     }
 
-    void testParameters_help_attend_help_displayed(){
+    void testParameters_avec_commande_help_attend_affichage_aide() {
         // Given
         String[] argv = ["-help"]
 
         // When
-        try{
+        try {
             new JCommander(main, argv);
         }
         // Then
-        catch (ParameterException e){
-            assertTrue( e.getMessage().contains("The following options are required: -output -playlist" ))
+        catch (ParameterException e) {
+            assertTrue(e.getMessage().contains("The following options are required: -output -playlist"))
         }
     }
 
-    void testGetMp3s_playList_existe_attend_mp3s() {
+    void testGetMp3s_avec_liste_attend_mp3s() {
         //Given
-        String path = PATH_TEST_DIRECTORY + '#PlayList.m3u'
+        File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
 
         //When
-        def mp3s = main.getMp3s(path)
+        String[] mp3s = main.getMp3s(playlist)
 
         //Then
-        assertTrue mp3s.get(0) == "artiste/album/titre.mp3"
+        assertTrue mp3s[0].contains(/artiste\album\titre.mp3/)
     }
 
-    void testGetMp3s_playList_inexistante_attend_mp3s() {
+    void testGetMp3s_avec_liste_inexistante_attend_aucun_mp3() {
         //Given
-        String path = PATH_TEST_DIRECTORY
+        File playlist = new File(CURRENT_TEST_PATH)
 
         //When
-        def mp3s = main.getMp3s(path)
+        String[] mp3s = main.getMp3s(playlist)
 
         //Then
         assertTrue mp3s.size() == 0
     }
 
-    void testCopyMp3s_liste_non_vide_attend_mp3_copies() {
+    void testCopyMp3s_avec_liste_attend_mp3() {
         //Given
-        def String path = PATH_TEST_DIRECTORY;
-        def mp3s = ['artiste/album/titre.mp3']
+        File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
+        File destination = new File('./')
+        def mp3s = main.getMp3s(playlist)
 
         //When
-        main.copyMp3s(mp3s,path)
+        main.copyMp3s(mp3s, playlist, destination)
 
         //Then
-        assertTrue new File(PATH_TEST_DIRECTORY+'/artiste/album/titre.mp3').isFile()
-        assertTrue new File(PATH_TEST_DIRECTORY+'/artiste').deleteDir()
+        assertTrue(new File("./artiste/album/titre.mp3").isFile())
+        assertTrue(new File(destination.canonicalPath + "/artiste").deleteDir())
+    }
+
+
+    void testCopyMp3s_copie_deux_fois_attend_une_copie_effectuee() {
+        //Given
+        File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
+        File destination = new File('./')
+        def mp3s = main.getMp3s(playlist)
+
+        // When / Then
+        assertEquals(1, main.copyMp3s(mp3s, playlist, destination))
+        assertEquals(0, main.copyMp3s(mp3s, playlist, destination))
+        assertTrue(new File(destination.canonicalPath + "/artiste").deleteDir())
+    }
+
+    void testAddAlbum_avec_album_false_attend_liste_identique(){
+        // Given
+        main.@album = false
+        File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
+        def mp3s = main.getMp3s(playlist)
+
+        // When
+        List<String> actual = main.addAlbum(mp3s);
+
+        // Then
+        assert actual == mp3s;
+
+    }
+
+    void testAddAlbum_avec_album_true_attend_liste_complete(){
+        // Given
+        main.@album = true
+        File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
+        def mp3s = main.getMp3s(playlist)
+
+        // When
+        List<String> actual = main.addAlbum(mp3s);
+
+        // Then
+        assert actual.find {it.endsWith("autre.mp3")};
+        assert actual.find {it.endsWith("titre.mp3")};
+
     }
 }
