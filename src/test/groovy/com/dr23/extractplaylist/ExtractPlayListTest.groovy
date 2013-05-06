@@ -7,7 +7,7 @@ class ExtractPlaylistTest extends GroovyTestCase {
 
     static String CURRENT_TEST_PATH = 'src/test/resources/com/dr23/extractplaylist/'
 
-    def main = new ExtractPlaylist();
+    def main = new ExtractPlayList();
 
 
     void testParameters_sans_parametre_attend_options_required() {
