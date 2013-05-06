@@ -4,7 +4,7 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 
 
-class ExtractPlayList {
+class ExtractPlaylist {
 
     @Parameter(names = "-playlist", description = "Playlist path (*.m3u)", required = true)
     String playlist;
@@ -23,7 +23,7 @@ class ExtractPlayList {
 
     static main(args) {
         // Initialisation
-        ExtractPlayList main = new ExtractPlayList()
+        ExtractPlaylist main = new ExtractPlaylist()
         JCommander jcmd = new JCommander(main, args);
 
         // Help
