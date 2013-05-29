@@ -78,12 +78,8 @@ class ExtractPlaylist {
             for (it in mp3s) {
                 File mp3 = new File(it)
                 if (!mp3sWithAlbums.contains(mp3.getParent())) {
-                    mp3sWithAlbums.addAll(mp3.getParentFile().list(new FilenameFilter() {
-                        @Override
-                        boolean accept(File dir, String name) {
-                            return name.endsWith(".mp3")
-                        }
-                    }))
+                    mp3sWithAlbums.addAll(mp3.getParentFile().list(
+                           {d, f-> f.endsWith(".mp3") } as FilenameFilter).toList())
                 }
             }
 
@@ -102,7 +98,6 @@ class ExtractPlaylist {
         int nbFileCopied = 0;
 
         mp3s.each {
-
             // Fichier source
             File mp3 = new File(it)
 
