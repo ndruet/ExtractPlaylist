@@ -41,7 +41,7 @@ class ExtractPlaylist {
             main.addAlbum(mp3s);
 
             // Copy mp3s
-            main.copyMp3s(mp3s,playlist,output)
+            main.copyMp3s(mp3s, playlist, output)
         }
     }
 
@@ -71,24 +71,22 @@ class ExtractPlaylist {
     /**
      * Ajout les albums complets dont sont issus les mp3 de la playlist
      */
-    List<String> addAlbum(List<String> mp3s){
-        if (album){
-            List mp3sWithAlbums = [];
+    List<String> addAlbum(List<String> mp3s) {
+        if (album) {
+            List album = [];
 
             for (it in mp3s) {
                 File mp3 = new File(it)
-                if (!mp3sWithAlbums.contains(mp3.getParent())) {
-                    mp3sWithAlbums.addAll(mp3.getParentFile().list(
-                           {d, f-> f.endsWith(".mp3") } as FilenameFilter).toList())
+                if (!(mp3.getParent() in album)) {
+                    album += mp3.getParentFile().list({ d, f -> f.endsWith(".mp3") } as FilenameFilter).toList()
                 }
             }
 
-            mp3sWithAlbums
-        }else{
+            album
+        } else {
             mp3s
         }
     }
-
 
     /**
      * Copie la liste de mp3 dans repertoire de destination
@@ -102,15 +100,15 @@ class ExtractPlaylist {
             File mp3 = new File(it)
 
             // Repertoire de destination
-            File arborescence = new File(destination.canonicalPath + File.separatorChar +(mp3.canonicalPath - (playlist.canonicalPath - playlist.name))- mp3.name)
+            File arborescence = new File(destination.canonicalPath + File.separatorChar + (mp3.canonicalPath - (playlist.canonicalPath - playlist.name)) - mp3.name)
             arborescence.mkdirs()
 
             // Fichier de destination
-            File dest = new File(arborescence.canonicalPath + File.separatorChar+ mp3.name)
+            File dest = new File(arborescence.canonicalPath + File.separatorChar + mp3.name)
 
             if (dest.exists()) {
                 println("fichier existant $dest.absoluteFile")
-            }else{
+            } else {
 
                 if (debug) {
                     println("processing $mp3.absoluteFile to $dest.absoluteFile")
