@@ -43,10 +43,10 @@ class ExtractPlaylistTest extends GroovyTestCase {
         File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
 
         //When
-        String[] mp3s = main.getMp3s(playlist)
+        def mp3s = main.getMp3s(playlist)
 
         //Then
-        assertTrue mp3s[0].contains(/artiste\album\titre.mp3/)
+        assertTrue mp3s[0].absolutePath.contains(/artiste\album\titre.mp3/)
     }
 
     void testGetMp3s_avec_liste_inexistante_attend_aucun_mp3() {
@@ -54,7 +54,7 @@ class ExtractPlaylistTest extends GroovyTestCase {
         File playlist = new File(CURRENT_TEST_PATH)
 
         //When
-        String[] mp3s = main.getMp3s(playlist)
+        def mp3s = main.getMp3s(playlist)
 
         //Then
         assertTrue mp3s.size() == 0
@@ -113,6 +113,15 @@ class ExtractPlaylistTest extends GroovyTestCase {
         // Then
         assert actual.find {it.endsWith("autre.mp3")};
         assert actual.find {it.endsWith("titre.mp3")};
+    }
 
+    void testGenerateReport(){
+        // Given
+        main.@report = true
+
+        // When
+        main.generateReport(null,null,null)
+
+        // Then
     }
 }
