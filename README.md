@@ -16,4 +16,4 @@ Outil en ligne de commande
 - __-output__ repertoire de destination
 - __-album__ ajout à la copie de toutes les musiques de l'album
 - __-help__ affiche l'aide
-- __-debug__ affiche les messages de débug
+- __-report__ affiche le rapport XML
