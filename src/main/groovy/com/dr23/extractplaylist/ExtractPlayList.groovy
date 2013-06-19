@@ -6,19 +6,19 @@ import groovy.xml.MarkupBuilder
 class ExtractPlaylist {
 
     @Parameter(names = "-playlist", description = "Playlist path (*.m3u)", required = true)
-    String playlist;
+    private String playlist;
 
     @Parameter(names = "-output", description = "Destination to copy files", required = true)
-    String output;
+    private String output;
 
     @Parameter(names = "-report", description = "Generate report XML")
-    Boolean report = false;
+    private  Boolean report = false;
 
     @Parameter(names = "-album", description = "Copy entire album")
-    Boolean album = false;
+    private Boolean album = false;
 
     @Parameter(names = "-help", description = "Display this help", help = true)
-    Boolean help;
+    private Boolean help;
 
     static main(args) {
         // Initialisation
@@ -37,7 +37,7 @@ class ExtractPlaylist {
             List<File> mp3s = main.getMp3s(playlist)
 
             // Add album
-            mp3s = main.addAlbum(mp3s);
+            mp3s = main.addAlbum(mp3s)
 
             // Copy mp3s
             main.copyMp3s(mp3s, playlist, output)
@@ -50,11 +50,19 @@ class ExtractPlaylist {
     /**
      * Génération du rapport
      */
-    void generateReport(List<File> mp3s, File playlist, File output) {
+    String generateReport(List<File> mp3s, File playlist, File output) {
        if (report){
            def writer = new StringWriter()
            def xml = new MarkupBuilder(writer)
-           xml.playlist();
+           xml.report(from:playlist.getName(),to:output){
+               mp3s.each {
+                   musique(titre:it.getName())
+               }
+           }
+
+           writer.toString()
+       }else{
+           null
        }
     }
 
