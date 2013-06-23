@@ -38,43 +38,43 @@ class ExtractPlaylistTest extends GroovyTestCase {
         assert baos.toString().contains('Usage: <main class> [options]')
     }
 
-    void testMain_attend_chargement_playlist_gestion_album_copie_puis_rapport() {
-        // Given
-        boolean chargementPlayList= false
-        boolean gestionAlbum= false
-        boolean copie= false
-        boolean rapport= false
-
-        ExtractPlaylist.metaClass.getMp3s = {
-            File playlist ->
-                chargementPlayList = true
-                return null
-        }
-        ExtractPlaylist.metaClass.addAlbum =  {
-            List<File> mp3s ->
-                gestionAlbum = true
-                return null
-        }
-        ExtractPlaylist.metaClass.copyMp3s =  {
-            List<File> mp3s, File playlist, File destination ->
-                copie = true
-                return null
-        }
-        ExtractPlaylist.metaClass.qenerateReport =  {
-            List<File> mp3s, File playlist, File output ->
-                rapport = true
-                return null
-        }
-
-        // When
-        ExtractPlaylist.main("-playlist","playlist.m3u","-output","./");
-
-        // Then
-        assertTrue(chargementPlayList)
-        assertTrue(gestionAlbum)
-        assertTrue(copie)
-        assertTrue(rapport)
-    }
+//    void testMain_attend_chargement_playlist_gestion_album_copie_puis_rapport() {
+//        // Given
+//        boolean chargementPlayList= false
+//        boolean gestionAlbum= false
+//        boolean copie= false
+//        boolean rapport= false
+//
+//        ExtractPlaylist.metaClass.getMp3s = {
+//            File playlist ->
+//                chargementPlayList = true
+//                return null
+//        }
+//        ExtractPlaylist.metaClass.addAlbum =  {
+//            List<File> mp3s ->
+//                gestionAlbum = true
+//                return null
+//        }
+//        ExtractPlaylist.metaClass.copyMp3s =  {
+//            List<File> mp3s, File playlist, File destination ->
+//                copie = true
+//                return null
+//        }
+//        ExtractPlaylist.metaClass.qenerateReport =  {
+//            List<File> mp3s, File playlist, File output ->
+//                rapport = true
+//                return null
+//        }
+//
+//        // When
+//        ExtractPlaylist.main("-playlist","playlist.m3u","-output","./");
+//
+//        // Then
+//        assertTrue(chargementPlayList)
+//        assertTrue(gestionAlbum)
+//        assertTrue(copie)
+//        assertTrue(rapport)
+//    }
 
     void testGetMp3s_avec_liste_attend_mp3s() {
         //Given
@@ -132,7 +132,7 @@ class ExtractPlaylistTest extends GroovyTestCase {
         def mp3s = main.getMp3s(playlist)
 
         // When
-        List<String> actual = main.addAlbum(mp3s)
+        List<File> actual = main.addAlbum(mp3s)
 
         // Then
         assert actual == mp3s;
@@ -146,11 +146,11 @@ class ExtractPlaylistTest extends GroovyTestCase {
         def mp3s = main.getMp3s(playlist)
 
         // When
-        List<String> actual = main.addAlbum(mp3s);
+        List<File> actual = main.addAlbum(mp3s);
 
         // Then
-        assert actual.find {it.endsWith("autre.mp3")};
-        assert actual.find {it.endsWith("titre.mp3")};
+        assert actual.find({it.name.endsWith("autre.mp3")})
+        assert actual.find({it.name.endsWith("titre.mp3")})
     }
 
     void testGenerateReport_attend_xml(){

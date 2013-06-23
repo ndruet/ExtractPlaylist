@@ -87,7 +87,7 @@ class ExtractPlaylist {
     /**
      * Ajout les albums complets dont sont issus les mp3 de la playlist
      */
-    List<String> addAlbum(List<File> mp3s) {
+    List<File> addAlbum(List<File> mp3s) {
         if (album) {
             List albums = [];
 
@@ -106,11 +106,8 @@ class ExtractPlaylist {
     /**
      * Filtre les fichiers mp3 d'un album
      */
-    List<String> filterMp3sFromDirectory(File directory){
-        List mp3s = directory.list({ d, f -> f.endsWith(".mp3") } as FilenameFilter).toList()
-        mp3s.collect ({
-            directory.getPath() + File.separatorChar + it
-        })
+    List<File> filterMp3sFromDirectory(File directory){
+        directory.listFiles({ d, f -> f.endsWith(".mp3") } as FilenameFilter)
     }
 
     /**
@@ -122,11 +119,11 @@ class ExtractPlaylist {
 
         mp3s.each {
             // Repertoire de destination
-            File arborescence = new File(destination.canonicalPath + File.separatorChar + (it.canonicalPath - (playlist.canonicalPath - playlist.name)) - it.name)
+            File arborescence = new File(destination.canonicalPath+ File.separatorChar + (it.canonicalPath - (playlist.canonicalPath- playlist.name)) - it.name)
             arborescence.mkdirs()
 
             // Fichier de destination
-            File dest = new File(arborescence.canonicalPath + File.separatorChar + it.name)
+            File dest = new File(arborescence.canonicalPath+ File.separatorChar + it.name)
 
             if (!dest.exists()) {
                 copy(it, dest)
