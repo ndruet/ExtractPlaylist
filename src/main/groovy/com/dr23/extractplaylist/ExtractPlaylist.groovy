@@ -14,7 +14,7 @@ class ExtractPlaylist {
     @Parameter(names = "-report", description = "Generate report XML")
     private  Boolean report = false;
 
-    @Parameter(names = "-album1", description = "Copy entire album1")
+    @Parameter(names = "-album", description = "Copy entire album1")
     private Boolean album = false;
 
     @Parameter(names = "-help", description = "Display this help", help = true)
