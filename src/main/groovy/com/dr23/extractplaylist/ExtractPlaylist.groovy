@@ -14,7 +14,7 @@ class ExtractPlaylist {
     @Parameter(names = "-report", description = "Generate report XML")
     private  Boolean report = false;
 
-    @Parameter(names = "-album", description = "Copy entire album")
+    @Parameter(names = "-album1", description = "Copy entire album1")
     private Boolean album = false;
 
     @Parameter(names = "-help", description = "Display this help", help = true)
@@ -36,8 +36,8 @@ class ExtractPlaylist {
             // Extract playlist
             List<File> mp3s = main.getMp3s(playlist)
 
-            // Add album
-            mp3s = main.addAlbum(mp3s)
+            // Add album1
+            mp3s = main.addAlbum(mp3s,playlist)
 
             // Copy mp3s
             main.copyMp3s(mp3s, playlist, output)
@@ -87,24 +87,31 @@ class ExtractPlaylist {
     /**
      * Ajout les albums complets dont sont issus les mp3 de la playlist
      */
-    List<File> addAlbum(List<File> mp3s) {
+    List<File> addAlbum(List<File> mp3s, File playlist) {
         if (album) {
-            List albums = [];
+            List albums = [];// Les albums traités
+            List<File> playlistEtAlbum = [];
 
             for (mp3 in mp3s) {
-                if (!(mp3.getParent() in albums)) {
-                    albums += filterMp3sFromDirectory(mp3.getParentFile())
+                // Evite de copier les mp3s non triés à la racine de la playlist
+                if (mp3.getCanonicalFile().getParent() == playlist.getCanonicalFile().getParent()){
+                    playlistEtAlbum += mp3
+                }
+                // Evite de parcourir les albums deux fois de suite
+                else if (!(mp3.getParent() in albums)) {
+                    playlistEtAlbum += filterMp3sFromDirectory(mp3.getParentFile())
+                    albums +=mp3.getParent()
                 }
             }
 
-            albums
+            playlistEtAlbum
         } else {
             mp3s
         }
     }
 
     /**
-     * Filtre les fichiers mp3 d'un album
+     * Filtre les fichiers mp3 d'un album1
      */
     List<File> filterMp3sFromDirectory(File directory){
         directory.listFiles({ d, f -> f.endsWith(".mp3") } as FilenameFilter)
@@ -115,7 +122,7 @@ class ExtractPlaylist {
      */
     Integer copyMp3s(List<File> mp3s, File playlist, File destination) {
 
-        int nbFileCopied = 0;
+        Integer count = 0
 
         mp3s.each {
             // Repertoire de destination
@@ -124,14 +131,13 @@ class ExtractPlaylist {
 
             // Fichier de destination
             File dest = new File(arborescence.canonicalPath+ File.separatorChar + it.name)
-
             if (!dest.exists()) {
+                count++
                 copy(it, dest)
-                nbFileCopied++;
             }
         }
 
-        nbFileCopied
+        count
     }
 
 

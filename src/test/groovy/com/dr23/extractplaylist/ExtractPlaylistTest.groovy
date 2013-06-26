@@ -38,43 +38,43 @@ class ExtractPlaylistTest extends GroovyTestCase {
         assert baos.toString().contains('Usage: <main class> [options]')
     }
 
-//    void testMain_attend_chargement_playlist_gestion_album_copie_puis_rapport() {
-//        // Given
-//        boolean chargementPlayList= false
-//        boolean gestionAlbum= false
-//        boolean copie= false
-//        boolean rapport= false
-//
-//        ExtractPlaylist.metaClass.getMp3s = {
-//            File playlist ->
-//                chargementPlayList = true
-//                return null
-//        }
-//        ExtractPlaylist.metaClass.addAlbum =  {
-//            List<File> mp3s ->
-//                gestionAlbum = true
-//                return null
-//        }
-//        ExtractPlaylist.metaClass.copyMp3s =  {
-//            List<File> mp3s, File playlist, File destination ->
-//                copie = true
-//                return null
-//        }
-//        ExtractPlaylist.metaClass.qenerateReport =  {
-//            List<File> mp3s, File playlist, File output ->
-//                rapport = true
-//                return null
-//        }
-//
-//        // When
-//        ExtractPlaylist.main("-playlist","playlist.m3u","-output","./");
-//
-//        // Then
-//        assertTrue(chargementPlayList)
-//        assertTrue(gestionAlbum)
-//        assertTrue(copie)
-//        assertTrue(rapport)
-//    }
+    void testMain_attend_chargement_playlist_gestion_album_copie_puis_rapport() {
+        // Given
+        boolean chargementPlayList= false
+        boolean gestionAlbum= false
+        boolean copie= false
+        boolean rapport= false
+
+        ExtractPlaylist.metaClass.getMp3s = {
+            File playlist ->
+                chargementPlayList = true
+                return []
+        }
+        ExtractPlaylist.metaClass.addAlbum =  {
+            List<File> mp3s, File playlist ->
+                gestionAlbum = true
+                return []
+        }
+        ExtractPlaylist.metaClass.copyMp3s =  {
+            List<File> mp3s, File playlist, File destination ->
+                copie = true
+                return 0
+        }
+        ExtractPlaylist.metaClass.generateReport =  {
+            List<File> mp3s, File playlist, File output ->
+                rapport = true
+                return ""
+        }
+
+        // When
+        ExtractPlaylist.main('-playlist','playlist.m3u','-output','./','-report');
+
+        // Then
+        assertTrue(chargementPlayList)
+        assertTrue(gestionAlbum)
+        assertTrue(copie)
+        assertTrue(rapport)
+    }
 
     void testGetMp3s_avec_liste_attend_mp3s() {
         //Given
@@ -84,7 +84,10 @@ class ExtractPlaylistTest extends GroovyTestCase {
         def mp3s = main.getMp3s(playlist)
 
         //Then
-        assertTrue mp3s[0].absolutePath.contains(/artiste\album\titre.mp3/)
+        assertTrue mp3s[0].absolutePath.contains(/artiste\album1\titre.mp3/)
+        assertTrue mp3s[1].absolutePath.contains(/artiste\album1\autre1.mp3/)
+        assertTrue mp3s[2].absolutePath.contains(/nonclasse1.mp3/)
+
     }
 
     void testGetMp3s_avec_liste_inexistante_attend_aucun_mp3() {
@@ -101,28 +104,31 @@ class ExtractPlaylistTest extends GroovyTestCase {
     void testCopyMp3s_avec_liste_attend_mp3() {
         //Given
         File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
-        File destination = new File('./')
+        File destination = new File('./copy/')
         def mp3s = main.getMp3s(playlist)
 
         //When
-        main.copyMp3s(mp3s, playlist, destination)
+        Integer count = main.copyMp3s(mp3s, playlist, destination)
 
         //Then
-        assertTrue(new File("./artiste/album/titre.mp3").isFile())
-        assertTrue(new File(destination.canonicalPath + "/artiste").deleteDir())
+        assertEquals 3 , count
+        assertTrue new File(destination.canonicalPath+"/artiste/album1/titre.mp3").isFile()
+        assertTrue new File(destination.canonicalPath+"/artiste/album1/autre1.mp3").isFile()
+        assertTrue new File(destination.canonicalPath+"/nonclasse1.mp3").isFile()
+        assertTrue new File(destination.canonicalPath ).deleteDir()
     }
 
 
     void testCopyMp3s_copie_deux_fois_attend_une_copie_effectuee() {
         //Given
         File playlist = new File(CURRENT_TEST_PATH + '#PlayList.m3u')
-        File destination = new File('./')
+        File destination = new File('./copy/')
         def mp3s = main.getMp3s(playlist)
 
         // When / Then
-        assertEquals(1, main.copyMp3s(mp3s, playlist, destination))
+        assertEquals(3, main.copyMp3s(mp3s, playlist, destination))
         assertEquals(0, main.copyMp3s(mp3s, playlist, destination))
-        assertTrue(new File(destination.canonicalPath + "/artiste").deleteDir())
+        assertTrue(new File(destination.canonicalPath).deleteDir())
     }
 
     void testAddAlbum_avec_album_false_attend_liste_identique(){
@@ -132,7 +138,7 @@ class ExtractPlaylistTest extends GroovyTestCase {
         def mp3s = main.getMp3s(playlist)
 
         // When
-        List<File> actual = main.addAlbum(mp3s)
+        List<File> actual = main.addAlbum(mp3s,playlist)
 
         // Then
         assert actual == mp3s;
@@ -146,11 +152,15 @@ class ExtractPlaylistTest extends GroovyTestCase {
         def mp3s = main.getMp3s(playlist)
 
         // When
-        List<File> actual = main.addAlbum(mp3s);
+        List<File> actual = main.addAlbum(mp3s,playlist);
 
         // Then
-        assert actual.find({it.name.endsWith("autre.mp3")})
+        assert actual.size() == 4
+        assert actual.find({it.name.endsWith("autre1.mp3")})
+        assert actual.find({it.name.endsWith("autre2.mp3")})
         assert actual.find({it.name.endsWith("titre.mp3")})
+        assert actual.find({it.name.endsWith("nonclasse1.mp3")})
+
     }
 
     void testGenerateReport_attend_xml(){
@@ -164,7 +174,7 @@ class ExtractPlaylistTest extends GroovyTestCase {
         String xml = main.generateReport(mp3s,playlist,output)
 
         // Then
-        assert xml == "<report from='#PlayList.m3u' to='.'>\n  <musique titre='titre.mp3' />\n</report>"
+        assert xml == new File(CURRENT_TEST_PATH+'report-expected.xml').text.replaceAll('\r','')
     }
 
     void testGenerateReport_attend_null(){

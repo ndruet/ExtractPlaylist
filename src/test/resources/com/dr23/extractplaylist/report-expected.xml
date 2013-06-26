@@ -1,0 +1,5 @@
+<report from='#PlayList.m3u' to='.'>
+  <musique titre='titre.mp3' />
+  <musique titre='autre1.mp3' />
+  <musique titre='nonclasse1.mp3' />
+</report>
