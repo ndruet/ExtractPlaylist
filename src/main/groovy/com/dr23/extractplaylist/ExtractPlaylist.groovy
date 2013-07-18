@@ -1,8 +1,10 @@
 package com.dr23.extractplaylist
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
+import groovy.util.logging.Slf4j
 import groovy.xml.MarkupBuilder
 
+@Slf4j
 class ExtractPlaylist {
 
     @Parameter(names = "-playlist", description = "Playlist path (*.m3u)", required = true)
@@ -33,17 +35,21 @@ class ExtractPlaylist {
             def playlist = new File(main.playlist)
             def output = new File(main.output)
 
+            log.info "Playlist: ${playlist.getCanonicalPath()}"
+            log.info "Output: ${output.getCanonicalPath()}"
+
             // Extract playlist
+
             List<File> mp3s = main.getMp3s(playlist)
 
-            // Add album1
+            // Add album
             mp3s = main.addAlbum(mp3s,playlist)
 
             // Copy mp3s
             main.copyMp3s(mp3s, playlist, output)
 
             // Generate report
-            main.generateReport(mp3s, playlist, output)
+            println main.generateReport(mp3s, playlist, output)
         }
     }
 
@@ -52,6 +58,8 @@ class ExtractPlaylist {
      */
     String generateReport(List<File> mp3s, File playlist, File output) {
        if (report){
+           log.info 'Génération du rapport...'
+
            def writer = new StringWriter()
            def xml = new MarkupBuilder(writer)
            xml.report(from:playlist.getName(),to:output){
@@ -62,6 +70,7 @@ class ExtractPlaylist {
 
            writer.toString()
        }else{
+           log.info 'Aucune génération du rapport...'
            null
        }
     }
@@ -72,13 +81,19 @@ class ExtractPlaylist {
     List<File> getMp3s(File playlist) {
         List<File> mp3s = []
         if (playlist.exists() && playlist.isFile()) {
+
+            log.info 'Extraction de la playlist en cours...'
+
             playlist.eachLine {
                 if (!it.empty) {
                     mp3s += new File(playlist.parent + it)
                 }
             }
+
+            log.info 'Extraction de la playlist terminée'
+
         } else {
-            println("file $playlist doesn't exist or not a file")
+            log.info "$playlist n'existe pas ou n'est pas un fichier"
         }
 
         mp3s
@@ -92,6 +107,8 @@ class ExtractPlaylist {
             List albums = [];// Les albums traités
             List<File> playlistEtAlbum = [];
 
+            log.info "Le contenu des albums est en cours d'ajout..."
+
             for (mp3 in mp3s) {
                 // Evite de copier les mp3s non triés à la racine de la playlist
                 if (mp3.getCanonicalFile().getParent() == playlist.getCanonicalFile().getParent()){
@@ -104,8 +121,11 @@ class ExtractPlaylist {
                 }
             }
 
+            log.info "Le contenu des albums a été ajouté"
+
             playlistEtAlbum
         } else {
+            log.info "Le contenu des albums n'est pas pris en compte"
             mp3s
         }
     }
@@ -124,6 +144,8 @@ class ExtractPlaylist {
 
         Integer count = 0
 
+        log.info 'Copie des mp3s en cours...'
+
         mp3s.each {
             // Repertoire de destination
             File arborescence = new File(destination.canonicalPath+ File.separatorChar + (it.canonicalPath - (playlist.canonicalPath- playlist.name)) - it.name)
@@ -132,10 +154,15 @@ class ExtractPlaylist {
             // Fichier de destination
             File dest = new File(arborescence.canonicalPath+ File.separatorChar + it.name)
             if (!dest.exists()) {
+                log.debug "$it copié"
                 count++
                 copy(it, dest)
+            }else{
+                log.debug "$it existe déjà"
             }
         }
+
+        log.info  "$count mp3s ont été copiés"
 
         count
     }
